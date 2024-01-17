@@ -292,7 +292,6 @@ function isMod(member) {
  * ===============================
 */
 
-let idCounter = 0;
 
 canvas.addListener("pixel", (x, y, color) => {
 	console.log("Pixel sent to " + clients.size + " - " + new Date().toString());

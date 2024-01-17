@@ -4,6 +4,8 @@ const app = require('./main.js');
 
 ExpressWS(app);
 
+let idCounter = 0;
+
 app.ws("/", ws =>
 {
 	const clientId = idCounter++;
