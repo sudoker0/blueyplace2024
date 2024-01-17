@@ -109,7 +109,7 @@ stats.startRecording(10 * 60 * 1000 /* 10 min */, 24 * 60 * 60 * 1000 /* 24 hrs 
  * ===============================
 */
 
-const oauthRedirectUrl = "http://localhost:3000/auth/discord/redirect"
+const oauthRedirectUrl = "https://blueyplace.onrender.com/auth/discord/redirect"
 const oauthScope = "identify";
 
 
