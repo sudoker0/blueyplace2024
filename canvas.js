@@ -69,7 +69,7 @@ const defaultCanvasSettings = {
 	sizeX: 1000,
 	sizeY: 1000,
 	colors: [ 16711680, 65280, 255 ],
-	maxCooldown: 60
+	maxCooldown: 120
 };
 
 function hexToInt(hex)
@@ -134,7 +134,7 @@ class Canvas extends EventEmitter
 		return parseInt(x) == x && parseInt(y) == y && x >= 0 && x < this.settings.sizeX && y >= 0 && y < this.settings.sizeY;
 	}
 
-	place(x, y, color, userId)
+	place(x, y, color, userId, isMod)
 	{
 		if(!this.isInBounds(x, y))
 		{
@@ -146,7 +146,7 @@ class Canvas extends EventEmitter
 			return false;
 		}
 
-		if(this.users.get(userId).cooldown > 0)
+		if(this.users.get(userId).cooldown > 0 && !isMod)
 		{
 			return false;
 		}
@@ -156,20 +156,6 @@ class Canvas extends EventEmitter
 		this.emit("pixel", x, y, color, userId, timestamp);
 
 		this.users.get(userId).cooldown = this.settings.maxCooldown;
-
-		return true;
-	}
-	adminPlace(x, y, color, userId)
-	{
-		
-		if(!this.isInBounds(x, y))
-		{
-			return false;
-		}
-
-		const timestamp = Date.now();
-		this._setPixel(x, y, color, userId, timestamp);
-		this.emit("pixel", x, y, color, userId, timestamp);
 
 		return true;
 	}

@@ -41,6 +41,11 @@ input, button, textarea, select
  *
  */
 
+@font-face {
+	font-family: 'CustomFont';
+	src: url('../images/helloheadline.ttf') format('truetype');
+}
+
 .fs-s
 {
 	font-size: 1em;
@@ -53,17 +58,24 @@ input, button, textarea, select
 
 .fs-l
 {
+	font-family: 'CustomFont', "Open Sans", Arial, sans-serif;
 	font-size: 2em;
 }
 
 .fs-xl
 {
+	font-family: 'CustomFont', "Open Sans", Arial, sans-serif;
 	font-size: 2.5em;
 }
 
 .b
 {
 	font-weight: 700;
+}
+
+.w
+{
+	color: white;
 }
 
 .centering
@@ -82,10 +94,11 @@ input, button, textarea, select
  */
 
 body
-{
-	color: rgb(26, 26, 26);
-
-	font-family: "Roboto", sans-serif;
+{	
+	background: url('../images/intro.jpg') no-repeat center center fixed;
+	background-size: cover;
+	color: #5a5a87;
+	font-family: "Open Sans", sans-serif;
 }
 
 main
@@ -95,18 +108,20 @@ main
 	width: min(1080px, 80%);
 	margin-inline: auto;
 
-	padding-top: 128px;
-	padding-bottom: 2px;
+	padding-top: 32px;
+	padding-bottom: 32px;
 }
 
 #title
 {
-	margin-bottom: 16px;
+	font-family: 'CustomFont', "Open Sans", Arial, sans-serif;
+	color: white;
 }
 
 section
 {
-	margin-bottom: 64px;
+	margin-bottom: 32px;
+	margin-top: 32px;
 }
 
 .even-columns

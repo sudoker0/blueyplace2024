@@ -33,7 +33,7 @@ let yourPixelsChart;
 
 
 const confettiSound = new Howl({ src: [ "../sounds/confetti.mp3" ], volume: 0.2 });
-
+const clickSound = new Howl({ src: [ "../sounds/click.mp3" ], volume: 0.2 });
 
 
 function rgbIntToHex(rgbInt)
@@ -290,6 +290,7 @@ startInterval(5 * 60 * 1000 /* 5 mins */, async () =>
 
 function login()
 {
+	clickSound.play();
 	window.location.href = "/auth/discord?from=stats";
 }
 

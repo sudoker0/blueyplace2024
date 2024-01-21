@@ -12,8 +12,16 @@
 // TODO: zoom on click
 
 
-
-
+fetch("/time")
+.then(res => res.text())
+.then(res =>
+{
+	console.log(res);
+	if(res === "false")
+	{
+		window.location.href = "/landing";
+	}
+})
 
 // TODO reload page if we are unauthorized
 
@@ -81,7 +89,7 @@ let placerTooltipTimer;
 
 let loggedIn = false;
 let banned = false;
-
+let moderator = false;
 
 
 
@@ -141,6 +149,7 @@ fetch("/initialize")
 {
 	loggedIn = res.loggedIn;
 	banned = res.banned;
+	moderator = res.moderator;
 
 	if(isIOS()) // fix for iOS blurring the canvas for some odd reason... 
 	{
@@ -485,7 +494,7 @@ const ctx = canvas.getContext("2d");
 
 async function placeColor()
 {
-	if(!selectedColor || cooldown > 0 )
+	if((!selectedColor || cooldown > 0) && !moderator)
 	{
 		return errorSound.play();
 	}
@@ -522,11 +531,7 @@ async function placeColor()
 	placeSound.play();
 
 	unpickColor();
-	if (isMod){
-		startCooldown(0);
-	} else {
-		startCooldown(maxCooldown);
-	}
+	startCooldown(maxCooldown);
 }
 
 function showSelectorBorder()
@@ -732,19 +737,7 @@ document.onkeydown = (e) =>
 function openGithub()
 {
 	clickSound.play();
-	window.location.href = "https://github.com/Manechat/place.manechat.net";
-}
-
-function rickroll()
-{
-	clickSound.play();
-	window.location.href = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
-}
-
-function openManechat()
-{
-	clickSound.play();
-	window.location.href = "https://discord.gg/manechat";
+	window.location.href = "/credits";
 }
 
 function openHeelerHouse()

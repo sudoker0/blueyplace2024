@@ -11,12 +11,14 @@ const { Client, Events, GatewayIntentBits } = require("discord.js");
 const Path = require("path");
 const QueryString = require("querystring");
 const promisify = require("util").promisify;
+const archiver = require("archiver");
 
 // Our stuff
 const Canvas = require("./canvas");
 
 // Configs
 const Config = require("./config.json");
+
 require("dotenv").config();
 
 
@@ -114,6 +116,311 @@ const oauthScope = "identify";
 
 
 
+app.get('/landing', function (req, res) {
+	const currentTimestampSeconds = Math.floor(Date.now() / 1000);
+	if (Config.canvasEnablesAt < currentTimestampSeconds) {
+		res.redirect('/');
+		return;
+	}
+	app.use(Express.static('public/images'));
+	const watingPage = `
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Starting Soon :D</title>
+	<style>
+		@font-face {
+			font-family: 'CustomFont';
+			src: url('./helloheadline.ttf') format('truetype');
+		}
+		body {
+			background: url('./intro.jpg') no-repeat center center fixed;
+			background-size: cover;
+			font-family: "Open Sans", Arial, sans-serif;
+			color: #ffffff;
+			margin: 0;
+			padding: 0;
+		}
+		  h1 {
+			font-family: 'CustomFont', "Open Sans", Arial, sans-serif;
+			text-align: center;
+			margin: 32px;
+		  }
+		  p {
+			text-align: center;
+		  }
+		  .countdown {
+			font-family: 'CustomFont', "Open Sans", Arial, sans-serif;
+			text-align: center;
+			font-size: 36px;
+		  }
+		  .minimapinfo {
+			text-align: center;
+			font-size: 36px;
+		  }
+  
+		  .button
+		  {
+			width: 300px;
+			height: 100px;
+		
+			background-color: #E9EDEE;
+			  border: 3px solid #111111;
+			  display: flex;
+			  justify-content: center;
+			  align-items: center;
+			  pointer-events: all;
+			  box-shadow: 10px 10px #111111C0;
+			  font-size: 1.5em;
+			  font-weight: 700;
+			  color: black;
+		  }
+		  
+		  @media (hover: hover)
+		  {
+			  .button:hover
+			  {
+				  cursor: pointer;
+				  filter: brightness(80%);
+			  }
+		  }
+		  
+		  .button:active
+		  {
+			  transform: scale(0.95);
+		  }
+
+		  .buttons {
+			  text-align: center;
+			  display: flex;
+			  justify-content: center;
+			  align-items: center;
+			  gap: 20px;
+			  margin-bottom: 32px;
+		  }
+	  </style>
+</head>
+<body>
+    <h1>BlueyPlace opens in:</h1>
+    <div id="countdown" class="countdown"></div>
+
+
+	<div id="loading-screen" class="countdown">
+		<img src="./dance.gif">
+	</div>
+	<div id="minimapinfo" class"countdown">
+		  	<div class="buttons">
+			  	<div class="button" onpointerup="clickA()">Overlay Instructions</div>
+				<div class="button" onpointerup="clickB()">Join the Heeler House!</div>
+		  	</div>
+	</div>
+	<script src="https://cdn.jsdelivr.net/npm/howler@2.2.3/dist/howler.min.js"></script>
+    <script>
+        const targetTimestamp = 1706770800;
+		const clickSound = new Howl({ src: [ "./click.mp3" ], volume: 0.2 });
+		function clickA() {
+			clickSound.play();
+			location.href='/credits';
+		}
+		function clickB() {
+			clickSound.play();
+			location.href='https://discord.gg/blueyheeler';
+		}
+
+        function updateCountdown() {
+            const currentTimestamp = Math.floor(Date.now() / 1000);
+            const timeRemaining = targetTimestamp - currentTimestamp;
+
+            if (timeRemaining <= 0) {
+                document.getElementById('countdown').innerHTML = "BlueyPlace is now open! Refresh you page!";
+				location.reload(); //Test Push E
+            } else {
+                const days = Math.floor(timeRemaining / (60 * 60 * 24));
+                const hours = Math.floor((timeRemaining % (60 * 60 * 24)) / (60 * 60));
+                const minutes = Math.floor((timeRemaining % (60 * 60)) / 60);
+                const seconds = timeRemaining % 60;
+				
+
+                const countdownText = \`\${days}d \${hours}h \${minutes}m \${seconds}s\`;
+                document.getElementById('countdown').innerHTML = '<strong>' + countdownText + '</strong>';
+            }
+        }
+        updateCountdown();
+
+        setInterval(updateCountdown, 1000);
+    </script>
+</body>
+</html>
+`;
+	res.send(watingPage);
+});
+
+
+
+app.get("/credits", (req, res) => {
+	app.use(Express.static('public/images'));
+	app.use(Express.static('public/sounds'));
+	const creditsPage = `
+  <html lang="en">
+  
+  <head>
+	  <meta charset="UTF-8">
+	  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	  <title>Credits and Overlay</title>
+	  <style>
+	  		@font-face {
+				font-family: 'CustomFont';
+				src: url('./helloheadline.ttf') format('truetype');
+			}
+			body {
+				background: url('./intro.jpg') no-repeat center center fixed;
+				background-size: cover;
+			  color: white;
+			  font-family: "Open Sans", Arial, sans-serif;
+			  margin: 0;
+			  padding: 0;
+		  }
+  
+		  .container {
+			  max-width: 600px;
+			  margin: 0 auto;
+			  padding-bottom: 32px;
+		  }
+
+		  p {
+			margin-top: 32px;
+		  }
+  
+		  h1 {
+				font-family: 'CustomFont', "Open Sans", Arial, sans-serif;
+			  text-align: center;
+			  margin: 32px;
+		  }
+
+		  .button
+		  {
+			width: 300px;
+			height: 100px;
+		
+			background-color: #E9EDEE;
+			  border: 3px solid #111111;
+			  display: flex;
+			  justify-content: center;
+			  align-items: center;
+			  pointer-events: all;
+			  box-shadow: 10px 10px #111111C0;
+			  font-size: 1.5em;
+			  font-weight: 700;
+			  color: black;
+		  }
+		  
+		  @media (hover: hover)
+		  {
+			  .button:hover
+			  {
+				  cursor: pointer;
+				  filter: brightness(80%);
+			  }
+		  }
+		  
+		  .button:active
+		  {
+			  transform: scale(0.95);
+		  }
+
+		  .buttons {
+			  margin-top: 32px;
+			  text-align: center;
+			  display: flex;
+			  justify-content: center;
+			  align-items: center;
+			  gap: 20px;
+		  }
+	  </style>
+  </head>
+  <body>
+	  <div class="container">
+		  <h1>Credits + Overlay Instructions</h1>
+		  <p>This is a fork of an open source canvas developed by Mercurial aka Mercy for Discord Server Manechat's 8th anniversary, with further edits by StarshinePony for r/Place faction BronyPlace. Adapted by Jalenluorion for The Heeler House's 10k member celebration!</p>
+  
+		  <div class="buttons">
+			  <div class="button" onpointerup="clickA()">GitHub Repository by Mercy</div>
+			  <div class="button" onpointerup="clickB()">Github Repository by Starshine</div>
+		  </div>
+
+		  <div class="buttons">
+			  <div class="button" onpointerup="clickC()">Join Manechat!</div>
+			  <div class="button" onpointerup="clickD()">Join Bronyplace!</div>
+		  </div>
+
+		  <p>Wanna use a template overlay? Download the script here! [FYI] > You need the ViolentMonkey extension for this to work!</p>
+		  <div class="buttons">
+			  <div class="button" onpointerup="clickE()">ViolentMonkey</div>
+			  <div class="button" onpointerup="clickF()">Download Script</div>
+		  </div>
+		  <div class="buttons">
+		  	<div class="button" onpointerup="clickG()">Return to BlueyPlace</div>
+			<div class="button" onpointerup="clickH()">Join the Heeler House!</div>
+		  </div>
+	  </div>
+  </body>
+  <script src="https://cdn.jsdelivr.net/npm/howler@2.2.3/dist/howler.min.js"></script>
+  <script>
+  const clickSound = new Howl({ src: [ "./click.mp3" ], volume: 0.2 });
+  function clickA() {
+	  clickSound.play();
+	  location.href='https://github.com/Manechat/place.manechat.net';
+  }
+  function clickB() {
+	  clickSound.play();
+	  location.href='https://github.com/StarshinePony/mareplace';
+  }
+  function clickC() {
+	  clickSound.play();
+	  location.href='https://discord.gg/manechat';
+	    }
+	function clickD() {
+		clickSound.play();
+		location.href='https://discord.gg/bronyplace';
+	}
+	function clickE() {
+		clickSound.play();
+		location.href='https://chromewebstore.google.com/detail/violentmonkey/jinjaccalgkegednnccohejagnlnfdag';
+	}	
+	function clickF() {
+		clickSound.play();
+		location.href='https://github.com/StarshinePony/2023-minimap/raw/main/minimap.user.js';
+	}
+	function clickG() {
+		clickSound.play();
+		location.href='/';
+	}
+	function clickH() {
+		clickSound.play();
+		location.href='https://discord.gg/blueyheeler';
+	}
+
+  </script>
+  </html>
+  `;
+
+	res.send(creditsPage);
+});
+
+
+
+// get /time returne boolean
+app.get('/time', function (req, res) {
+	const currentTimestampSeconds = Math.floor(Date.now() / 1000);
+	if (Config.canvasEnablesAt < currentTimestampSeconds) {
+		res.send("true");
+		return;
+	}
+	res.send("false");
+});
+
+
+
 app.get("/auth/discord", (req, res) => {
 	const query = QueryString.encode(
 		{
@@ -181,7 +488,7 @@ app.get("/initialize", userInfo, async (req, res) => {
 		return res.json({ loggedIn: false, banned: false, cooldown: 0, settings: canvas.settings });
 	}
 
-	res.json({ loggedIn: true, banned: isBanned(req.member), cooldown: canvas.users.get(req.user.id).cooldown, settings: canvas.settings });
+	res.json({ loggedIn: true, banned: isBanned(req.member), moderator: isMod(req.member), cooldown: canvas.users.get(req.user.id).cooldown, settings: canvas.settings });
 });
 
 
@@ -202,15 +509,8 @@ app.post("/place", userInfo, async (req, res) => {
 		return res.status(403).send();
 	}
 
-	let isModBool = false;
-	if (isMod(req.member)) {
-		isModBool = true;
-		const placed = canvas.adminPlace(+req.body.x, +req.body.y, +req.body.color, req.member.user.id);
-		res.send({ placed, isModBool });
-	} else {
-		const placed = canvas.place(+req.body.x, +req.body.y, +req.body.color, req.member.user.id);
-		res.send({ placed, isModBool });
-	}
+	const placed = canvas.place(+req.body.x, +req.body.y, +req.body.color, req.member.user.id, isMod(req.member));
+	res.send({ placed });
 });
 
 
@@ -261,7 +561,24 @@ app.get("/stats-json", ExpressCompression(), userInfo, (req, res) => {
 	res.json(statsJson);
 });
 
+app.get("/datadump", (req, res) => {
+	const canvasFolderPath = Path.join(__dirname, "canvas");
+	const archive = archiver("zip", {
+		zlib: { level: 9 } // Set compression level to maximum
+	});
 
+	// Set the response headers for downloading the zip file
+	res.attachment("canvas.zip");
+
+	// Pipe the archive data directly to the response
+	archive.pipe(res);
+
+	// Add all files in the canvas folder to the archive
+	archive.directory(canvasFolderPath, false);
+
+	// Finalize the archive
+	archive.finalize();
+});
 
 /*
  * ===============================
@@ -310,17 +627,15 @@ let idCounter = 0;
 
 app.setUpSockets = () => // TODO: THis is really ugly because of Greenlock
 {
-app.ws("/", ws =>
-{
-	const clientId = idCounter++;
+	app.ws("/", ws => {
+		const clientId = idCounter++;
 
-	clients.set(clientId, ws);
+		clients.set(clientId, ws);
 
-	ws.on("close", () =>
-	{
-		clients.delete(clientId);
+		ws.on("close", () => {
+			clients.delete(clientId);
+		});
 	});
-});
 }
 
 /*
