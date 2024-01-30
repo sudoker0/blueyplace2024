@@ -69,7 +69,7 @@ client.once(Events.ClientReady, (c) => {
                     });
             }
         }
-    }, 5 * 60 * 1000); // 5 minutes in milliseconds
+    }, 15 * 60 * 1000); // 15 minutes in milliseconds
 });
 
 /*
