@@ -355,8 +355,8 @@ app.get("/credits", (req, res) => {
 
 		  <p>Wanna use a template overlay? Download the script here! [FYI] > You need the ViolentMonkey extension for this to work!</p>
 		  <div class="buttons">
-			  <div class="button" onpointerup="clickE()">ViolentMonkey</div>
-			  <div class="button" onpointerup="clickF()">Download Script</div>
+			  <div class="button" onpointerup="clickE()">Download Script</div>
+			  <div class="button" onpointerup="clickF()">Overlay Tutorial</div>
 		  </div>
 		  <div class="buttons">
 		  	<div class="button" onpointerup="clickG()">Return to BlueyPlace</div>
@@ -385,11 +385,11 @@ app.get("/credits", (req, res) => {
 	}
 	function clickE() {
 		clickSound.play();
-		location.href='https://chromewebstore.google.com/detail/violentmonkey/jinjaccalgkegednnccohejagnlnfdag';
+		location.href='https://github.com/osuplace/templateManager/raw/main/dist/templateManager.user.js';
 	}	
 	function clickF() {
 		clickSound.play();
-		location.href='https://github.com/StarshinePony/2023-minimap/raw/main/minimap.user.js';
+		location.href='https://docs.google.com/document/d/12WTiDcRo4P35zJvlgWX06MKVbitbDo3ehnF7mysFv4Y/edit';
 	}
 	function clickG() {
 		clickSound.play();
