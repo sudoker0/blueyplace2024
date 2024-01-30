@@ -3,6 +3,7 @@
 greenlock.d
 !greenlock.d/config.json
 
+.canvas
 .DS_Store
 
 # Logs
