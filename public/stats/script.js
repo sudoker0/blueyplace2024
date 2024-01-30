@@ -118,7 +118,7 @@ function objectToDataset(dataset, mapKey, mapValue, mapColor, properties)
 
 startInterval(5 * 60 * 1000 /* 5 mins */, async () =>
 {
-	const res = await fetch("https://blueyplace.onrender.com/stats-json");
+	const res = await fetch("https://blueyplace-7jfhuhqmfa-uc.a.run.app/stats-json");
 	const stats = await res.json();
 
 	console.log(stats);

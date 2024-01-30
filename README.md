@@ -1,1 +1,1 @@
-# place.manechat.net
+# blueyplace

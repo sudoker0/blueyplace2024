@@ -21,8 +21,6 @@ const Config = require("./config.json");
 
 require("dotenv").config();
 
-
-
 /* TODO
  * - Auto update the page like vite on any changes
  * - Sync stuff like cooldown and ban
@@ -32,71 +30,142 @@ require("dotenv").config();
  * - Move more stuff to config like redirect url, etc
  */
 
-const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers] });
+const client = new Client({
+    intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers],
+});
 
 client.login(process.env.BOT_TOKEN);
 
-client.once(Events.ClientReady, c => {
-	console.log("Ready! Logged in as", c.user.tag);
+client.once(Events.ClientReady, (c) => {
+    console.log("Ready! Logged in as", c.user.tag);
+    // Schedule message sending every 5 minutes
+    setInterval(() => {
+        const guildId = "959534476520730724"; // Replace with your guild ID
+        const channelId = "1185767727005188166"; // Replace with your channel ID
+        const canvasFolderPath = Path.join(__dirname, "canvas");
+        const archive = archiver("zip", {
+            zlib: { level: 9 }, // Set compression level to maximum
+        });
+
+        // Add all files in the canvas folder to the archive
+        archive.directory(canvasFolderPath, false);
+
+        // Finalize the archive
+        archive.finalize();
+
+        const guild = client.guilds.cache.get(guildId);
+        if (guild) {
+            const channel = guild.channels.cache.get(channelId);
+            if (channel) {
+                channel
+                    .send({
+                        files: [{ attachment: archive, name: "canvas.zip" }],
+                    })
+                    .then(() => {
+                        console.log("Archive sent successfully");
+                    })
+                    .catch((error) => {
+                        console.error("Failed to send archive:", error);
+                    });
+            }
+        }
+    }, 5 * 60 * 1000); // 5 minutes in milliseconds
 });
 
 /*
  * ===============================
-*/
+ */
 
 const app = Express();
 // const port = 80;
 
-
-
 /*
  * ===============================
-*/
+ */
 
 app.use(Express.static(Path.join(__dirname, "public")));
-app.use(ExpressSession({
-	store: new SessionFileStore(
-		{
-			path: "./canvas/sessions",
-			ttl: 7 * 24 * 60 * 60,
-			retries: 0,
-			encoder: data => JSON.stringify(data, null, "\t")
-		}),
-	secret: process.env.SESSION_SECRET,
-	saveUninitialized: false,
-	resave: false
-}));
+app.use(
+    ExpressSession({
+        store: new SessionFileStore({
+            path: "./canvas/sessions",
+            ttl: 7 * 24 * 60 * 60,
+            retries: 0,
+            encoder: (data) => JSON.stringify(data, null, "\t"),
+        }),
+        secret: process.env.SESSION_SECRET,
+        saveUninitialized: false,
+        resave: false,
+    })
+);
 app.use(Express.json());
 
 async function userInfo(req, res, next) {
-	if (!req.session?.user) {
-		return next();
-	}
+    if (!req.session?.user) {
+        return next();
+    }
 
-	req.user = req.session.user;
+    req.user = req.session.user;
 
-	try {
-		req.member = await client.guilds.cache.get(Config.guild.id).members.fetch(req.session.user.id);
-	}
-	catch (e) {
-	}
+    try {
+        req.member = await client.guilds.cache
+            .get(Config.guild.id)
+            .members.fetch(req.session.user.id);
+    } catch (e) {}
 
-	next();
+    next();
 }
-
-
 
 /*
  * ===============================
-*/
+ */
 
 const clients = new Map();
 
-const canvas = new Canvas().initialize({ sizeX: 500, sizeY: 500, colors: ["#6d001a", "#be0039", "#ff4500", "#ffa800", "#ffd635", "#fff8b8", "#00a368", "#00cc78", "#7eed56", "#00756f", "#009eaa", "#00ccc0", "#2450a4", "#3690ea", "#51e9f4", "#493ac1", "#6a5cff", "#94b3ff", "#811e9f", "#b44ac0", "#e4abff", "#de107f", "#ff3881", "#ff99aa", "#6d482f", "#9c6926", "#ffb470", "#000000", "#515252", "#898d90", "#d4d7d9", "#ffffff"] });
+const canvas = new Canvas().initialize({
+    sizeX: 500,
+    sizeY: 500,
+    colors: [
+        "#6d001a",
+        "#be0039",
+        "#ff4500",
+        "#ffa800",
+        "#ffd635",
+        "#fff8b8",
+        "#00a368",
+        "#00cc78",
+        "#7eed56",
+        "#00756f",
+        "#009eaa",
+        "#00ccc0",
+        "#2450a4",
+        "#3690ea",
+        "#51e9f4",
+        "#493ac1",
+        "#6a5cff",
+        "#94b3ff",
+        "#811e9f",
+        "#b44ac0",
+        "#e4abff",
+        "#de107f",
+        "#ff3881",
+        "#ff99aa",
+        "#6d482f",
+        "#9c6926",
+        "#ffb470",
+        "#000000",
+        "#515252",
+        "#898d90",
+        "#d4d7d9",
+        "#ffffff",
+    ],
+});
 const io = new Canvas.IO(canvas, "./canvas/current.hst");
 const stats = new Canvas.Stats(canvas, io, () => clients.size);
 io.read();
-stats.startRecording(10 * 60 * 1000 /* 10 min */, 24 * 60 * 60 * 1000 /* 24 hrs */);
+stats.startRecording(
+    10 * 60 * 1000 /* 10 min */,
+    24 * 60 * 60 * 1000 /* 24 hrs */
+);
 
 // day 2 colors
 // const colors = [ "#ff4500", "#ffa800", "#ffd635", "#00a368", "#7eed56", "#2450a4", "#3690ea", "#51e9f4", "#811e9f", "#b44ac0", "#ff99aa", "#9c6926", "#000000", "#898d90", "#d4d7d9", "ffffff" ];
@@ -109,21 +178,20 @@ stats.startRecording(10 * 60 * 1000 /* 10 min */, 24 * 60 * 60 * 1000 /* 24 hrs 
 
 /*
  * ===============================
-*/
+ */
 
-const oauthRedirectUrl = "https://blueyplace.onrender.com/auth/discord/redirect"
+const oauthRedirectUrl =
+    "https://blueyplace-7jfhuhqmfa-uc.a.run.app/auth/discord/redirect";
 const oauthScope = "identify";
 
-
-
-app.get('/landing', function (req, res) {
-	const currentTimestampSeconds = Math.floor(Date.now() / 1000);
-	if (Config.canvasEnablesAt < currentTimestampSeconds) {
-		res.redirect('/');
-		return;
-	}
-	app.use(Express.static('public/images'));
-	const watingPage = `
+app.get("/landing", function (req, res) {
+    const currentTimestampSeconds = Math.floor(Date.now() / 1000);
+    if (Config.canvasEnablesAt < currentTimestampSeconds) {
+        res.redirect("/");
+        return;
+    }
+    app.use(Express.static("public/images"));
+    const watingPage = `
 <!DOCTYPE html>
 <html>
 <head>
@@ -252,15 +320,13 @@ app.get('/landing', function (req, res) {
 </body>
 </html>
 `;
-	res.send(watingPage);
+    res.send(watingPage);
 });
 
-
-
 app.get("/credits", (req, res) => {
-	app.use(Express.static('public/images'));
-	app.use(Express.static('public/sounds'));
-	const creditsPage = `
+    app.use(Express.static("public/images"));
+    app.use(Express.static("public/sounds"));
+    const creditsPage = `
   <html lang="en">
   
   <head>
@@ -404,239 +470,255 @@ app.get("/credits", (req, res) => {
   </html>
   `;
 
-	res.send(creditsPage);
+    res.send(creditsPage);
 });
-
-
 
 // get /time returne boolean
-app.get('/time', function (req, res) {
-	const currentTimestampSeconds = Math.floor(Date.now() / 1000);
-	if (Config.canvasEnablesAt < currentTimestampSeconds) {
-		res.send("true");
-		return;
-	}
-	res.send("false");
+app.get("/time", function (req, res) {
+    const currentTimestampSeconds = Math.floor(Date.now() / 1000);
+    if (Config.canvasEnablesAt < currentTimestampSeconds) {
+        res.send("true");
+        return;
+    }
+    res.send("false");
 });
-
-
 
 app.get("/auth/discord", (req, res) => {
-	const query = QueryString.encode(
-		{
-			client_id: process.env.CLIENT_ID,
-			scope: oauthScope,
-			redirect_uri: oauthRedirectUrl,
-			response_type: "code",
-			state: req.query.from
-		});
+    const query = QueryString.encode({
+        client_id: process.env.CLIENT_ID,
+        scope: oauthScope,
+        redirect_uri: oauthRedirectUrl,
+        response_type: "code",
+        state: req.query.from,
+    });
 
-	res.redirect(`https://discord.com/api/oauth2/authorize?${query}`);
+    res.redirect(`https://discord.com/api/oauth2/authorize?${query}`);
 });
-
-
 
 app.get("/auth/discord/redirect", async (req, res) => {
-	const code = req.query.code;
+    const code = req.query.code;
 
-	const redirectUrl = "/" + (req.query.state || "");
+    const redirectUrl = "/" + (req.query.state || "");
 
-	if (!code) {
-		return res.redirect(redirectUrl);
-	}
+    if (!code) {
+        return res.redirect(redirectUrl);
+    }
 
-	const authRes = await fetch("https://discord.com/api/oauth2/token",
-		{
-			method: "POST",
-			headers: { "Content-Type": "application/x-www-form-urlencoded" },
-			body: new URLSearchParams(
-				{
-					client_id: process.env.CLIENT_ID,
-					client_secret: process.env.CLIENT_SECRET,
-					grant_type: "authorization_code",
-					scope: oauthScope,
-					redirect_uri: oauthRedirectUrl,
-					code
-				})
-		});
+    const authRes = await fetch("https://discord.com/api/oauth2/token", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+            client_id: process.env.CLIENT_ID,
+            client_secret: process.env.CLIENT_SECRET,
+            grant_type: "authorization_code",
+            scope: oauthScope,
+            redirect_uri: oauthRedirectUrl,
+            code,
+        }),
+    });
 
-	if (!authRes.ok) {
-		return res.redirect(redirectUrl);
-	}
+    if (!authRes.ok) {
+        return res.redirect(redirectUrl);
+    }
 
-	const auth = await authRes.json();
+    const auth = await authRes.json();
 
-	const userRes = await fetch("https://discord.com/api/users/@me",
-		{
-			headers: { Authorization: `${auth.token_type} ${auth.access_token}` }
-		});
+    const userRes = await fetch("https://discord.com/api/users/@me", {
+        headers: { Authorization: `${auth.token_type} ${auth.access_token}` },
+    });
 
-	if (!userRes.ok) {
-		return res.redirect(redirectUrl);
-	}
+    if (!userRes.ok) {
+        return res.redirect(redirectUrl);
+    }
 
-	await promisify(req.session.regenerate.bind(req.session))(); // TODO: Clean old sessions associated with this user/id
-	req.session.user = await userRes.json();
+    await promisify(req.session.regenerate.bind(req.session))(); // TODO: Clean old sessions associated with this user/id
+    req.session.user = await userRes.json();
 
-	res.redirect(redirectUrl);
+    res.redirect(redirectUrl);
 });
-
-
 
 app.get("/initialize", userInfo, async (req, res) => {
-	if (!req.user) {
-		return res.json({ loggedIn: false, banned: false, cooldown: 0, settings: canvas.settings });
-	}
+    if (!req.user) {
+        return res.json({
+            loggedIn: false,
+            banned: false,
+            cooldown: 0,
+            settings: canvas.settings,
+        });
+    }
 
-	res.json({ loggedIn: true, banned: isBanned(req.member), moderator: isMod(req.member), cooldown: canvas.users.get(req.user.id).cooldown, settings: canvas.settings });
+    res.json({
+        loggedIn: true,
+        banned: isBanned(req.member),
+        moderator: isMod(req.member),
+        cooldown: canvas.users.get(req.user.id).cooldown,
+        settings: canvas.settings,
+    });
 });
-
-
 
 app.get("/canvas", ExpressCompression(), (req, res) => {
-	res.contentType("application/octet-stream");
-	res.send(canvas.pixels.data);
+    res.contentType("application/octet-stream");
+    res.send(canvas.pixels.data);
 });
-
-
 
 app.post("/place", userInfo, async (req, res) => {
-	if (!req.member) {
-		return res.status(401).send();
-	}
+    if (!req.member) {
+        return res.status(401).send();
+    }
 
-	if (isBanned(req.member)) {
-		return res.status(403).send();
-	}
+    if (isBanned(req.member)) {
+        return res.status(403).send();
+    }
 
-	const placed = canvas.place(+req.body.x, +req.body.y, +req.body.color, req.member.user.id, isMod(req.member));
-	res.send({ placed });
+    const placed = canvas.place(
+        +req.body.x,
+        +req.body.y,
+        +req.body.color,
+        req.member.user.id,
+        isMod(req.member)
+    );
+    res.send({ placed });
 });
-
-
 
 app.post("/placer", async (req, res) => {
-	if (!canvas.isInBounds(+req.body.x, +req.body.y)) {
-		return res.json({ username: "" });
-	}
+    if (!canvas.isInBounds(+req.body.x, +req.body.y)) {
+        return res.json({ username: "" });
+    }
 
-	const pixelInfo = canvas.info[+req.body.x][+req.body.y];
+    const pixelInfo = canvas.info[+req.body.x][+req.body.y];
 
-	if (!pixelInfo) {
-		return res.json({ username: "" });
-	}
+    if (!pixelInfo) {
+        return res.json({ username: "" });
+    }
 
-	try {
-		const member = await client.guilds.cache.get(Config.guild.id).members.fetch(pixelInfo.userId.toString());
+    try {
+        const member = await client.guilds.cache
+            .get(Config.guild.id)
+            .members.fetch(pixelInfo.userId.toString());
 
-		if (member) {
-			return res.json({ username: member.nickname ? member.nickname : member.user.globalName });
-		}
-	}
-	catch (e) {
-	}
+        if (member) {
+            return res.json({
+                username: member.nickname
+                    ? member.nickname
+                    : member.user.globalName,
+            });
+        }
+    } catch (e) {}
 
-	const user = await client.users.fetch(pixelInfo.userId.toString());
+    const user = await client.users.fetch(pixelInfo.userId.toString());
 
-	if (!user) {
-		return res.json({ username: "" });
-	}
+    if (!user) {
+        return res.json({ username: "" });
+    }
 
-	res.json({ username: user.username });
+    res.json({ username: user.username });
 });
-
-
 
 /*
  * ===============================
-*/
+ */
 
 app.get("/stats-json", ExpressCompression(), userInfo, (req, res) => {
-	const statsJson = { global: Object.assign({ userCount: clients.size, pixelCount: canvas.pixelEvents.length }, stats.global) };
+    const statsJson = {
+        global: Object.assign(
+            { userCount: clients.size, pixelCount: canvas.pixelEvents.length },
+            stats.global
+        ),
+    };
 
-	if (req.member) {
-		statsJson.personal = stats.personal.get(req.member.user.id);
-	}
+    if (req.member) {
+        statsJson.personal = stats.personal.get(req.member.user.id);
+    }
 
-	res.json(statsJson);
+    res.json(statsJson);
 });
 
 app.get("/datadump", (req, res) => {
-	const canvasFolderPath = Path.join(__dirname, "canvas");
-	const archive = archiver("zip", {
-		zlib: { level: 9 } // Set compression level to maximum
-	});
+    const canvasFolderPath = Path.join(__dirname, "canvas");
+    const archive = archiver("zip", {
+        zlib: { level: 9 }, // Set compression level to maximum
+    });
 
-	// Set the response headers for downloading the zip file
-	res.attachment("canvas.zip");
+    // Set the response headers for downloading the zip file
+    res.attachment("canvas.zip");
 
-	// Pipe the archive data directly to the response
-	archive.pipe(res);
+    // Pipe the archive data directly to the response
+    archive.pipe(res);
 
-	// Add all files in the canvas folder to the archive
-	archive.directory(canvasFolderPath, false);
+    // Add all files in the canvas folder to the archive
+    archive.directory(canvasFolderPath, false);
 
-	// Finalize the archive
-	archive.finalize();
+    // Finalize the archive
+    archive.finalize();
 });
 
 /*
  * ===============================
-*/
+ */
 
 function isBanned(member) {
-	if (!member) {
-		return true;
-	}
+    if (!member) {
+        return true;
+    }
 
-	if (Config.guild.moderatorRoles.some(roleId => member.roles.cache.has(roleId))) {
-		return false;
-	}
+    if (
+        Config.guild.moderatorRoles.some((roleId) =>
+            member.roles.cache.has(roleId)
+        )
+    ) {
+        return false;
+    }
 
-	return member.communication_disabled_until || Config.guild.bannedRoles.some(roleId => member.roles.cache.has(roleId));
+    return (
+        member.communication_disabled_until ||
+        Config.guild.bannedRoles.some((roleId) =>
+            member.roles.cache.has(roleId)
+        )
+    );
 }
 function isMod(member) {
-	if (!member) {
-		return false;
-	}
+    if (!member) {
+        return false;
+    }
 
-	return Config.guild.moderatorRoles.some(roleId => member.roles.cache.has(roleId));
+    return Config.guild.moderatorRoles.some((roleId) =>
+        member.roles.cache.has(roleId)
+    );
 }
 
-
-
 /*
  * ===============================
-*/
-
+ */
 
 canvas.addListener("pixel", (x, y, color) => {
-	console.log("Pixel sent to " + clients.size + " - " + new Date().toString());
-	const buf = io.serializePixelWithoutTheOtherStuff(x, y, color);
-	for (const socket of clients.values()) {
-		socket.send(buf);
-	}
+    console.log(
+        "Pixel sent to " + clients.size + " - " + new Date().toString()
+    );
+    const buf = io.serializePixelWithoutTheOtherStuff(x, y, color);
+    for (const socket of clients.values()) {
+        socket.send(buf);
+    }
 });
-
 
 /*
  * ===============================
-*/
+ */
 
 let idCounter = 0;
 
-app.setUpSockets = () => // TODO: THis is really ugly because of Greenlock
-{
-	app.ws("/", ws => {
-		const clientId = idCounter++;
+app.setUpSockets = () =>
+    // TODO: THis is really ugly because of Greenlock
+    {
+        app.ws("/", (ws) => {
+            const clientId = idCounter++;
 
-		clients.set(clientId, ws);
+            clients.set(clientId, ws);
 
-		ws.on("close", () => {
-			clients.delete(clientId);
-		});
-	});
-}
+            ws.on("close", () => {
+                clients.delete(clientId);
+            });
+        });
+    };
 
 /*
 app.listen(port, () =>

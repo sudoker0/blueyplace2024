@@ -1,10 +1,9 @@
-# ManePlace
-canvas
-
 # Greenlock
 .greenlockrc
 greenlock.d
 !greenlock.d/config.json
+
+.DS_Store
 
 # Logs
 logs
