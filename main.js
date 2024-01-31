@@ -473,6 +473,18 @@ app.get("/credits", (req, res) => {
     res.send(creditsPage);
 });
 
+app.post("/usernamegetter", async (req, res) => {
+	const userId = req.body.userId
+	console.log(userId)
+	const user = await client.users.fetch(userId.toString());
+
+	if (!user) {
+		return res.json({ username: "" });
+	}
+
+	res.json({ username: user.username });
+})
+
 // get /time returne boolean
 app.get("/time", function (req, res) {
     const currentTimestampSeconds = Math.floor(Date.now() / 1000);
