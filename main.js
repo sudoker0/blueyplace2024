@@ -377,7 +377,7 @@ app.get("/credits", (req, res) => {
 			  box-shadow: 10px 10px #111111C0;
 			  font-size: 1.5em;
 			  font-weight: 700;
-			  color: black;
+			  color: #5a5a87;
 		  }
 		  
 		  @media (hover: hover)
