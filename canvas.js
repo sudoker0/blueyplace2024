@@ -243,7 +243,7 @@ class Canvas extends EventEmitter {
 		return parseInt(x) == x && parseInt(y) == y && x >= 0 && x < this.settings.sizeX && y >= 0 && y < this.settings.sizeY;
 	}
 
-	place(x, y, color, userId) {
+	place(x, y, color, userId, isMod) {
 		if (!this.isInBounds(x, y)) {
 			return false;
 		}
@@ -252,7 +252,8 @@ class Canvas extends EventEmitter {
 			return false;
 		}
 
-		if (this.users.get(userId).cooldown > 0) {
+		if(this.users.get(userId).cooldown > 0 && !isMod)
+		{
 			return false;
 		}
 
