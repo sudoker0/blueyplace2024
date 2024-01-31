@@ -451,7 +451,7 @@ app.get("/credits", (req, res) => {
 	}
 	function clickE() {
 		clickSound.play();
-		location.href='https://github.com/osuplace/templateManager/raw/main/dist/templateManager.user.js';
+		location.href='https://raw.githubusercontent.com/jalenluorion/blueyplace2023/main/templateManage.user.js';
 	}	
 	function clickF() {
 		clickSound.play();
