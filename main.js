@@ -284,7 +284,7 @@ app.get("/landing", function (req, res) {
 	</div>
 	<script src="https://cdn.jsdelivr.net/npm/howler@2.2.3/dist/howler.min.js"></script>
     <script>
-        const targetTimestamp = 1706770800;
+        const targetTimestamp = 1706905860;
 		const clickSound = new Howl({ src: [ "./click.mp3" ], volume: 0.2 });
 		function clickA() {
 			clickSound.play();
