@@ -5,7 +5,7 @@ const ExpressCompression = require("compression");
 const SessionFileStore = require("session-file-store")(ExpressSession);
 
 // Discord
-const { Client, Events, GatewayIntentBits } = require("discord.js");
+const { Client, Events, GatewayIntentBits, Partials } = require("discord.js");
 
 // Utils
 const Path = require("path");
@@ -18,6 +18,10 @@ const Canvas = require("./canvas");
 
 // Configs
 const Config = require("./config.json");
+const fs = require("fs");
+const { pipeline } = require("stream");
+const axios = require("axios");
+const unzipper = require("unzipper");
 
 require("dotenv").config();
 
@@ -31,7 +35,14 @@ require("dotenv").config();
  */
 
 const client = new Client({
-    intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers],
+    intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.MessageContent,
+        GatewayIntentBits.GuildMembers,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.GuildMessageReactions,
+    ],
+    partials: [Partials.Message, Partials.Channel, Partials.Reaction],
 });
 
 client.login(process.env.BOT_TOKEN);
@@ -70,6 +81,48 @@ client.once(Events.ClientReady, (c) => {
             }
         }
     }, 15 * 60 * 1000); // 15 minutes in milliseconds
+});
+
+client.on(Events.MessageReactionAdd, async (reaction, user) => {
+    console.log("Reaction added");
+    if (reaction.message.partial) await reaction.message.fetch();
+    if (reaction.partial) await reaction.fetch();
+    if (user.bot) return;
+    if (!reaction.message.guild) return;
+    if (reaction.message.channel.id === "1185767727005188166") {
+        if (reaction.emoji.name === "👍") {
+            const attachment = reaction.message.attachments.first();
+            const mReply = await reaction.message.reply("Loading canvas backup...");
+            if (attachment) {
+                const filePath = Path.join(__dirname, attachment.name);
+                const writer = fs.createWriteStream(filePath);
+                const response = await axios({
+                    url: attachment.url,
+                    method: "GET",
+                    responseType: "stream",
+                });
+                response.data.pipe(writer);
+                await new Promise((resolve, reject) => {
+                    writer.on("finish", resolve);
+                    writer.on("error", reject);
+                });
+
+                console.log("File saved:", filePath);
+
+                const unzipPath = Path.join(__dirname, "canvas");
+                fs.createReadStream(filePath)
+                    .pipe(unzipper.Extract({ path: unzipPath }))
+                    .on("close", () => {
+                        console.log("File unzipped successfully");
+                    })
+                    .on("error", (error) => {
+                        console.error("Failed to unzip the file:", error);
+                    });
+
+                await mReply.edit("Canvas backup loaded successfully!");
+            }
+        }
+    }
 });
 
 /*
@@ -474,9 +527,9 @@ app.get("/credits", (req, res) => {
 });
 
 app.post("/usernamegetter", async (req, res) => {
-	const userId = req.body.userId
-	console.log(userId)
-    
+    const userId = req.body.userId;
+    console.log(userId);
+
     try {
         const member = await client.guilds.cache
             .get(Config.guild.id)
@@ -493,12 +546,12 @@ app.post("/usernamegetter", async (req, res) => {
 
     const user = await client.users.fetch(userId.toString());
 
-	if (!user) {
-		return res.json({ username: "" });
-	}
+    if (!user) {
+        return res.json({ username: "" });
+    }
 
-	res.json({ username: user.username });
-})
+    res.json({ username: user.username });
+});
 
 // get /time returne boolean
 app.get("/time", function (req, res) {

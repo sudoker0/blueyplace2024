@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "dependencies": {
     "archiver": "^6.0.1",
+    "axios": "^1.6.7",
     "compression": "^1.7.4",
     "discord.js": "^14.13.0",
     "dotenv": "^16.3.1",
@@ -13,9 +14,10 @@
     "h264-mp4-encoder": "^1.0.12",
     "pngjs": "^7.0.0",
     "session-file-store": "^1.5.0",
-    "smart-buffer": "^4.2.0"
+    "smart-buffer": "^4.2.0",
+    "unzipper": "^0.10.14"
   },
-  "scripts" : {
+  "scripts": {
     "start": "node server.js"
   }
 }
