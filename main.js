@@ -108,7 +108,10 @@ client.on(Events.MessageReactionAdd, async (reaction, user) => {
                 });
 
                 console.log("File saved:", filePath);
-
+                // delete existing canvas folder
+                const canvasFolderPath = Path.join(__dirname, "canvas");
+                fs.rmdirSync(canvasFolderPath, { recursive: true });
+                
                 const unzipPath = Path.join(__dirname, "canvas");
                 fs.createReadStream(filePath)
                     .pipe(unzipper.Extract({ path: unzipPath }))
