@@ -51,8 +51,8 @@ client.once(Events.ClientReady, (c) => {
     console.log("Ready! Logged in as", c.user.tag);
     // Schedule message sending every 5 minutes
     setInterval(() => {
-        const guildId = "959534476520730724"; // Replace with your guild ID
-        const channelId = "1185767727005188166"; // Replace with your channel ID
+        const guildId = "1066720803443458048"; // Replace with your guild ID
+        const channelId = "1066720804487827508"; // Replace with your channel ID
         const canvasFolderPath = Path.join(__dirname, "canvas");
         const archive = archiver("zip", {
             zlib: { level: 9 }, // Set compression level to maximum
@@ -89,7 +89,7 @@ client.on(Events.MessageReactionAdd, async (reaction, user) => {
     if (reaction.partial) await reaction.fetch();
     if (user.bot) return;
     if (!reaction.message.guild) return;
-    if (reaction.message.channel.id === "1185767727005188166") {
+    if (reaction.message.channel.id === "1066720804487827508") {
         if (reaction.emoji.name === "👍") {
             const attachment = reaction.message.attachments.first();
             const mReply = await reaction.message.reply("Loading canvas backup...");
@@ -110,8 +110,11 @@ client.on(Events.MessageReactionAdd, async (reaction, user) => {
                 console.log("File saved:", filePath);
                 // delete existing canvas folder
                 const canvasFolderPath = Path.join(__dirname, "canvas");
-                fs.rmdirSync(canvasFolderPath, { recursive: true });
-                
+                try {
+                    fs.rmSync(canvasFolderPath, { recursive: true, force: true });
+                } catch (e) {
+
+                }
                 const unzipPath = Path.join(__dirname, "canvas");
                 fs.createReadStream(filePath)
                     .pipe(unzipper.Extract({ path: unzipPath }))
@@ -237,7 +240,7 @@ stats.startRecording(
  */
 
 const oauthRedirectUrl =
-    "https://blueyplace-7jfhuhqmfa-uc.a.run.app/auth/discord/redirect";
+    "http://127.0.0.1:8080/auth/discord/redirect";
 const oauthScope = "identify";
 
 app.get("/landing", function (req, res) {

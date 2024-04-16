@@ -25,7 +25,9 @@ class ImageBuffer {
 	}
 
 	setColor(x, y, color) {
+		console.log(x, y, color)
 		this.data.writeUIntBE(color, this.calculateOffset(x, y), 3);
+		console.log("b")
 	}
 }
 

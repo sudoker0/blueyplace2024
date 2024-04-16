@@ -1,9 +1,9 @@
 {
 	"guild":
 	{
-		"id": "959534476520730724",
-		"bannedRoles": [ "1197082948432830565" ],
-		"moderatorRoles": [ "1073391142881722400" ]
+		"id": "1066720803443458048",
+		"bannedRoles": [ ],
+		"moderatorRoles": [ "fda" ]
 	},
 	"canvasEnablesAt": 1706905860
 }
